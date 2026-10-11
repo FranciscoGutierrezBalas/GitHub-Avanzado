@@ -9,11 +9,11 @@ jobs:
       - name: Comparar DEV_TOKEN de GitHub con LOCAL_DEV_TOKEN del Runner
         env:
           GH_DEV_TOKEN: ${{ secrets.DEV_TOKEN }}
-        shell: pwsh
+        shell: powershell
         run: |
           $localToken = $env:LOCAL_DEV_TOKEN
           $secretToken = $env:GH_DEV_TOKEN
-
+          
           Write-Output "Comprobando variables..."
           if ($localToken -eq $secretToken) {
               Write-Output "✅ Los tokens coinciden correctamente."

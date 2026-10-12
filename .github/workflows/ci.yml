@@ -1,0 +1,45 @@
+name: CI - Continuous Integration
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Actualizar README para la feature
+        run: |
+          echo "Añadida feature: ${{ github.head_ref || github.ref_name }}" >> README.md
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          git add README.md
+          git commit -m "Añadir línea de feature al README" || echo "Sin cambios"
+
+  validate-dev:
+    needs: update-readme
+    runs-on: self-hosted
+    steps:
+      - name: Validar DEV_TOKEN contra variable local
+        env:
+          GH_DEV_TOKEN: ${{ secrets.DEV_TOKEN }}
+        shell: powershell
+        run: |
+          $localToken = $env:LOCAL_DEV_TOKEN
+          $secretToken = $env:GH_DEV_TOKEN
+          
+          Write-Output "Comprobando DEV_TOKEN..."
+          if ($localToken -eq $secretToken) {
+              Write-Output "✅ Los tokens de desarrollo coinciden correctamente."
+              exit 0
+          } else {
+              Write-Error "❌ Los tokens de desarrollo NO coinciden."
+              exit 1
+          }
